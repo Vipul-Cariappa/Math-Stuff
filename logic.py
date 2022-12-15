@@ -1,3 +1,6 @@
+import math
+
+
 class _ADD:
     def __str__(self):
         return "+"
@@ -251,14 +254,23 @@ class Equation:
             self.generate_truth_table()
 
         table_length = len(self.table[str(self)])
+        header_string_length = [len(i) for i in self.table.keys()]
 
+        print("|", end="")
         for i in self.table.keys():
-            print(i, end="\t")
+            print(f" {i} |", end="")
         print("\n")
 
         for i in range(table_length):
-            for j in self.table.keys():
-                print(self.table[j][i], end="\t")
+            print("|", end="")
+            for index, j in enumerate(self.table.keys()):
+                print(
+                    " " * math.floor((header_string_length[index] - 1) / 2)
+                    + f" {self.table[j][i]}"
+                    + " " * math.ceil((header_string_length[index] - 1) / 2)
+                    + " |",
+                    end="",
+                )
             print("\n")
         print("\n")
 
@@ -295,6 +307,8 @@ class Equation:
             # adding sub equations
             eq.sub_eqs.append(self)
             eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
 
             return eq
 
@@ -333,6 +347,8 @@ class Equation:
             # adding sub equations
             eq.sub_eqs.append(self)
             eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
 
             return eq
 
@@ -371,6 +387,8 @@ class Equation:
             # adding sub equations
             eq.sub_eqs.append(self)
             eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
 
             return eq
 
@@ -409,6 +427,8 @@ class Equation:
             # adding sub equations
             eq.sub_eqs.append(self)
             eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
 
             return eq
 
@@ -442,4 +462,5 @@ if __name__ == "__main__":
     y = Variable("y")
     z = Variable("z")
 
-    ((y * z) + (x * y)).display_table()
+    eq = (y * z) + (x * y)
+    eq.display_table()
