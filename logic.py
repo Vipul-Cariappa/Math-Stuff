@@ -152,6 +152,7 @@ class Variable:
 class Equation:
     def __init__(self):
         self.eq = []
+        self.sub_eqs = []
         self.table = None
 
     def solve(self, *args):
@@ -166,8 +167,19 @@ class Equation:
             "x + y": [0, 1, 1, 1],
         }
         """
+
+        if self.table is not None:
+            # the equation is already solved
+            return self.table
+
+        # solve all the sub equations
+        # Note: solved sub equations is not used or solving sub equations is not necessary to solve given equation
+        for i in self.sub_eqs:
+            i.generate_truth_table()
+
         variable_count = 0
         variables = []
+        sub_eq_strings = []
         table = dict()
 
         eq_string = str(self)
@@ -180,6 +192,11 @@ class Equation:
 
         combinations = 2**variable_count
         table[eq_string] = [0] * combinations  # to store result
+
+        for i in self.sub_eqs:
+            sub_eq_str = str(i)
+            table[sub_eq_str] = [0] * combinations
+            sub_eq_strings.append(sub_eq_str)
 
         for i in range(combinations):
             results_list = table[eq_string]
@@ -201,6 +218,29 @@ class Equation:
                 )
                 else 0
             )
+
+        for eq in sub_eq_strings:
+            eq_string = str(eq)
+
+            for i in range(combinations):
+                eval_string = eq_string
+                results_list = table[eq_string]
+
+                for j in range(variable_count):
+                    eval_string = eval_string.replace(
+                        str(variables[j]), "1" if i & (1 << j) else "0"
+                    )
+
+                print(eval_string)
+                results_list[i] = (
+                    1
+                    if eval(
+                        eval_string.replace("+", "or")
+                        .replace("*", "and")
+                        .replace("~", "not")
+                    )
+                    else 0
+                )
 
         self.table = table
 
@@ -239,7 +279,7 @@ class Equation:
             return eq
 
         if isinstance(other, Equation):
-            # adding exisiting operations
+            # adding existing operations
             eq.eq.append(OB)
             eq.eq.extend(self.eq)
             eq.eq.append(CB)
@@ -251,6 +291,11 @@ class Equation:
             eq.eq.append(OB)
             eq.eq.extend(other.eq)
             eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
+
             return eq
 
         raise TypeError("...")
@@ -280,10 +325,14 @@ class Equation:
             # add operator
             eq.eq.append(ADD)
 
-            # adding exisiting operations
+            # adding existing operations
             eq.eq.append(OB)
             eq.eq.extend(self.eq)
             eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
 
             return eq
 
@@ -306,7 +355,7 @@ class Equation:
             return eq
 
         if isinstance(other, Equation):
-            # adding exisiting operations
+            # adding existing operations
             eq.eq.append(OB)
             eq.eq.extend(self.eq)
             eq.eq.append(CB)
@@ -318,6 +367,11 @@ class Equation:
             eq.eq.append(OB)
             eq.eq.extend(other.eq)
             eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
+
             return eq
 
         raise TypeError("...")
@@ -347,10 +401,14 @@ class Equation:
             # add operator
             eq.eq.append(MUL)
 
-            # adding exisiting operations
+            # adding existing operations
             eq.eq.append(OB)
             eq.eq.extend(self.eq)
             eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
 
             return eq
 
@@ -384,5 +442,4 @@ if __name__ == "__main__":
     y = Variable("y")
     z = Variable("z")
 
-    # (x + (y * z)).display_table()
-    (~x + (y * z)).display_table()
+    ((y * z) + (x * y)).display_table()
