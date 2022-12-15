@@ -234,7 +234,6 @@ class Equation:
                         str(variables[j]), "1" if i & (1 << j) else "0"
                     )
 
-                print(eval_string)
                 results_list[i] = (
                     1
                     if eval(
