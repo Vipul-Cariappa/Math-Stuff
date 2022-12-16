@@ -11,6 +11,11 @@ class _MUL:
         return "*"
 
 
+class _XOR:
+    def __str__(self):
+        return "^"
+
+
 class _NEG:
     def __str__(self):
         return "~"
@@ -28,6 +33,7 @@ class _CB:
 
 ADD = _ADD()
 MUL = _MUL()
+XOR = _XOR()
 NEG = _NEG()
 OB = _OB()
 CB = _CB()
@@ -59,6 +65,10 @@ class Variable:
             eq.eq.append(OB)
             eq.eq.extend(other.eq)
             eq.eq.append(CB)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
             return eq
 
         raise TypeError("...")
@@ -85,6 +95,10 @@ class Variable:
             eq.eq.append(CB)
             eq.eq.append(ADD)
             eq.eq.append(self)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
             return eq
 
         raise TypeError("...")
@@ -111,6 +125,10 @@ class Variable:
             eq.eq.append(OB)
             eq.eq.extend(other.eq)
             eq.eq.append(CB)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
             return eq
 
         raise TypeError("...")
@@ -137,6 +155,70 @@ class Variable:
             eq.eq.append(CB)
             eq.eq.append(ADD)
             eq.eq.append(self)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
+            return eq
+
+        raise TypeError("...")
+
+    def __xor__(self, other):
+        # self * other
+        eq = Equation()
+
+        if isinstance(other, int):
+            eq.eq.append(self)
+            eq.eq.append(XOR)
+            eq.eq.append(1 if other else 0)
+            return eq
+
+        if isinstance(other, Variable):
+            eq.eq.append(self)
+            eq.eq.append(XOR)
+            eq.eq.append(other)
+            return eq
+
+        if isinstance(other, Equation):
+            eq.eq.append(self)
+            eq.eq.append(XOR)
+            eq.eq.append(OB)
+            eq.eq.extend(other.eq)
+            eq.eq.append(CB)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
+            return eq
+
+        raise TypeError("...")
+
+    def __rxor__(self, other):
+        # other * self
+        eq = Equation()
+
+        if isinstance(other, int):
+            eq.eq.append(1 if other else 0)
+            eq.eq.append(XOR)
+            eq.eq.append(self)
+            return eq
+
+        if isinstance(other, Variable):
+            eq.eq.append(other)
+            eq.eq.append(MUL)
+            eq.eq.append(self)
+            return eq
+
+        if isinstance(other, Equation):
+            eq.eq.append(OB)
+            eq.eq.extend(other.eq)
+            eq.eq.append(CB)
+            eq.eq.append(ADD)
+            eq.eq.append(self)
+
+            eq.sub_eqs.extend(other.sub_eqs)
+            eq.sub_eqs.append(other)
+
             return eq
 
         raise TypeError("...")
@@ -218,6 +300,7 @@ class Equation:
                     eval_string.replace("+", "or")
                     .replace("*", "and")
                     .replace("~", "not")
+                    .replace("^", "!=")
                 )
                 else 0
             )
@@ -240,6 +323,7 @@ class Equation:
                         eval_string.replace("+", "or")
                         .replace("*", "and")
                         .replace("~", "not")
+                        .replace("^", "!=")
                     )
                     else 0
                 )
@@ -433,6 +517,86 @@ class Equation:
 
         raise TypeError("...")
 
+    def __xor__(self, other):
+        # self + other
+        eq = Equation()
+
+        if isinstance(other, int):
+            eq.eq.extend(self.eq)
+            eq.eq.append(XOR)
+            eq.eq.append(1 if other else 0)
+            return eq
+
+        if isinstance(other, Variable):
+            eq.eq.extend(self.eq)
+            eq.eq.append(XOR)
+            eq.eq.append(other)
+            return eq
+
+        if isinstance(other, Equation):
+            # adding existing operations
+            eq.eq.append(OB)
+            eq.eq.extend(self.eq)
+            eq.eq.append(CB)
+
+            # add operator
+            eq.eq.append(XOR)
+
+            # adding other's operations
+            eq.eq.append(OB)
+            eq.eq.extend(other.eq)
+            eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
+
+            return eq
+
+        raise TypeError("...")
+
+    def __rxor__(self, other):
+        # other + self
+        eq = Equation()
+
+        if isinstance(other, int):
+            eq.eq.append(1 if other else 0)
+            eq.eq.append(XOR)
+            eq.eq.extend(self.eq)
+            return eq
+
+        if isinstance(other, Variable):
+            eq.eq.append(other)
+            eq.eq.append(XOR)
+            eq.eq.extend(self.eq)
+            return eq
+
+        if isinstance(other, Equation):
+            # adding other's operations
+            eq.eq.append(OB)
+            eq.eq.extend(other.eq)
+            eq.eq.append(CB)
+
+            # add operator
+            eq.eq.append(XOR)
+
+            # adding existing operations
+            eq.eq.append(OB)
+            eq.eq.extend(self.eq)
+            eq.eq.append(CB)
+
+            # adding sub equations
+            eq.sub_eqs.append(self)
+            eq.sub_eqs.extend(self.sub_eqs)
+            eq.sub_eqs.append(other)
+            eq.sub_eqs.extend(other.sub_eqs)
+
+            return eq
+
+        raise TypeError("...")
+
     def __invert__(self):
         # ~self
         eq = Equation()
@@ -461,5 +625,6 @@ if __name__ == "__main__":
     y = Variable("y")
     z = Variable("z")
 
-    eq = (y * z) + (x * y)
+    eq = (y * z) ^ (x * y)
+    print(eq)
     eq.display_table()
