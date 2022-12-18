@@ -63,12 +63,16 @@ class Variable:
             eq.eq.append(self)
             eq.eq.append(ADD)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(self)
             eq.eq.append(ADD)
             eq.eq.append(other)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -81,6 +85,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([self, ADD, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -93,12 +98,16 @@ class Variable:
             eq.eq.append(1 if other else 0)
             eq.eq.append(ADD)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(ADD)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -111,6 +120,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([OB, *(other.string), CB, ADD, self])
             return eq
 
         raise TypeError("...")
@@ -123,12 +133,16 @@ class Variable:
             eq.eq.append(self)
             eq.eq.append(MUL)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(self)
             eq.eq.append(MUL)
             eq.eq.append(other)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -141,6 +155,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([self, MUL, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -153,12 +168,16 @@ class Variable:
             eq.eq.append(1 if other else 0)
             eq.eq.append(MUL)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(MUL)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -171,6 +190,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([OB, *(other.string), CB, MUL, self])
             return eq
 
         raise TypeError("...")
@@ -183,12 +203,16 @@ class Variable:
             eq.eq.append(self)
             eq.eq.append(XOR)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(self)
             eq.eq.append(XOR)
             eq.eq.append(other)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -201,6 +225,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([self, XOR, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -213,12 +238,16 @@ class Variable:
             eq.eq.append(1 if other else 0)
             eq.eq.append(XOR)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(MUL)
             eq.eq.append(self)
+
+            eq.string.extend(eq.eq)
             return eq
 
         if isinstance(other, Equation):
@@ -231,6 +260,7 @@ class Variable:
             eq.sub_eqs.extend(other.sub_eqs)
             eq.sub_eqs.append(other)
 
+            eq.string.extend([OB, *(other.string), CB, XOR, self])
             return eq
 
         raise TypeError("...")
@@ -240,6 +270,8 @@ class Variable:
         eq = Equation()
         eq.eq.append(NEG)
         eq.eq.append(self)
+
+        eq.string.extend(eq.eq)
         return eq
 
     def __mod__(self, other):
@@ -249,7 +281,7 @@ class Variable:
         eq = (~self + other) * (~other + self)
 
         if isinstance(other, Equation):
-            eq.string = [self, BICOND, OB, *(other.eq), CB]
+            eq.string = [self, BICOND, OB, *(other.string), CB]
         else:
             eq.string = [self, BICOND, other]
 
@@ -262,7 +294,7 @@ class Variable:
         eq = (~other + self) * (~self + other)
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(other.eq), CB, BICOND, self]
+            eq.string = [OB, *(other.string), CB, BICOND, self]
         else:
             eq.string = [other, BICOND, self]
 
@@ -274,7 +306,7 @@ class Variable:
         eq = ~self + other
 
         if isinstance(other, Equation):
-            eq.string = [self, COND, OB, *(other.eq), CB]
+            eq.string = [self, COND, OB, *(other.string), CB]
         else:
             eq.string = [self, COND, other]
 
@@ -286,7 +318,7 @@ class Variable:
         eq = ~other + self
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(other.eq), CB, COND, self]
+            eq.string = [OB, *(other.string), CB, COND, self]
         else:
             eq.string = [other, COND, self]
 
@@ -428,12 +460,16 @@ class Equation:
             eq.eq.extend(self.eq)
             eq.eq.append(ADD)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend([OB, *(self.string), CB, ADD, other])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.extend(self.eq)
             eq.eq.append(ADD)
             eq.eq.append(other)
+
+            eq.string.extend([OB, *(self.string), CB, ADD, other])
             return eq
 
         if isinstance(other, Equation):
@@ -456,6 +492,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(self.string), CB, ADD, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -468,12 +505,16 @@ class Equation:
             eq.eq.append(1 if other else 0)
             eq.eq.append(ADD)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, ADD, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(ADD)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, ADD, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Equation):
@@ -496,6 +537,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(other.string), CB, ADD, OB, *(self.string), CB])
             return eq
 
         raise TypeError("...")
@@ -508,12 +550,16 @@ class Equation:
             eq.eq.extend(self.eq)
             eq.eq.append(MUL)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend([OB, *(self.string), CB, MUL, other])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.extend(self.eq)
             eq.eq.append(MUL)
             eq.eq.append(other)
+
+            eq.string.extend([OB, *(self.string), CB, MUL, other])
             return eq
 
         if isinstance(other, Equation):
@@ -536,6 +582,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(self.string), CB, MUL, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -548,12 +595,16 @@ class Equation:
             eq.eq.append(1 if other else 0)
             eq.eq.append(MUL)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, MUL, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(MUL)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, MUL, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Equation):
@@ -576,6 +627,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(other.string), CB, MUL, OB, *(self.string), CB])
             return eq
 
         raise TypeError("...")
@@ -588,12 +640,16 @@ class Equation:
             eq.eq.extend(self.eq)
             eq.eq.append(XOR)
             eq.eq.append(1 if other else 0)
+
+            eq.string.extend([OB, *(self.string), CB, XOR, other])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.extend(self.eq)
             eq.eq.append(XOR)
             eq.eq.append(other)
+
+            eq.string.extend([OB, *(self.string), CB, XOR, other])
             return eq
 
         if isinstance(other, Equation):
@@ -616,6 +672,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(self.string), CB, XOR, OB, *(other.string), CB])
             return eq
 
         raise TypeError("...")
@@ -628,12 +685,16 @@ class Equation:
             eq.eq.append(1 if other else 0)
             eq.eq.append(XOR)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, XOR, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(XOR)
             eq.eq.extend(self.eq)
+
+            eq.string.extend([other, XOR, OB, *(self.string), CB])
             return eq
 
         if isinstance(other, Equation):
@@ -656,6 +717,7 @@ class Equation:
             eq.sub_eqs.append(other)
             eq.sub_eqs.extend(other.sub_eqs)
 
+            eq.string.extend([OB, *(other.string), CB, XOR, OB, *(self.string), CB])
             return eq
 
         raise TypeError("...")
@@ -667,9 +729,9 @@ class Equation:
         eq = (~self + other) * (~other + self)
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(self.eq), CB, BICOND, OB, *(other.eq), CB]
+            eq.string = [OB, *(self.string), CB, BICOND, OB, *(other.string), CB]
         else:
-            eq.string = [OB, *(self.eq), CB, BICOND, other]
+            eq.string = [OB, *(self.string), CB, BICOND, other]
 
         return eq
 
@@ -680,7 +742,7 @@ class Equation:
         eq = (~other + self) * (~self + other)
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(other.eq), CB, BICOND, OB, *(self.eq), CB]
+            eq.string = [OB, *(other.string), CB, BICOND, OB, *(self.string), CB]
         else:
             eq.string = [
                 other,
@@ -698,9 +760,9 @@ class Equation:
         eq = ~self + other
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(self.eq), CB, COND, OB, *(other.eq), CB]
+            eq.string = [OB, *(self.string), CB, COND, OB, *(other.string), CB]
         else:
-            eq.string = [OB, *(self.eq), CB, COND, other]
+            eq.string = [OB, *(self.string), CB, COND, other]
 
         return eq
 
@@ -710,13 +772,14 @@ class Equation:
         eq = ~other + self
 
         if isinstance(other, Equation):
-            eq.string = [OB, *(other.eq), CB, COND, OB, *(self.eq), CB]
+            eq.string = [OB, *(other.string), CB, COND, OB, *(self.string), CB]
+            # print(f"\n\n{eq.string}\n\n")
         else:
             eq.string = [
                 other,
                 COND,
                 OB,
-                *(self.eq),
+                *(self.string),
                 CB,
             ]
 
@@ -737,18 +800,10 @@ class Equation:
         pass
 
     def __repr__(self) -> str:
-        result = ""
-        for i in self.eq:
-            result += str(i) + " "
-
-        return result[:-1]
+        return " ".join((str(i) for i in self.string))
 
     def __str__(self):
-        result = ""
-        for i in self.eq:
-            result += str(i) + " "
-
-        return result[:-1]
+        return " ".join((str(i) for i in self.eq))
 
 
 if __name__ == "__main__":
