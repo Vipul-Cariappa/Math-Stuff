@@ -1,5 +1,4 @@
 import math
-from icecream import ic
 
 
 class _ADD:
@@ -400,13 +399,9 @@ class Equation:
                 )
                 else 0
             )
-            # ic(eval_string, results_list[i], i)
 
         for eq in self.sub_eqs:
             eq_string = repr(eq)
-
-            # ic(eq, str(eq), repr(eq))
-            # ic(eq_string)
 
             for i in range(combinations):
                 eval_string = eq_string
@@ -417,7 +412,6 @@ class Equation:
                         str(variables[j]), "1" if i & (1 << j) else "0"
                     )
 
-                # ic(eval_string)
                 results_list[i] = (
                     1
                     if eval(
@@ -428,8 +422,6 @@ class Equation:
                     )
                     else 0
                 )
-                # ic(eval_string, results_list[i], i)
-                # ic(results_list[i], i)
 
         self.table = table
 
@@ -805,7 +797,6 @@ class Equation:
 
         if isinstance(other, Equation):
             eq.string = [OB, *(other.string), CB, COND, OB, *(self.string), CB]
-            # print(f"\n\n{eq.string}\n\n")
         else:
             eq.string = [
                 other,
