@@ -1,4 +1,5 @@
 import math
+from icecream import ic
 
 
 class _ADD:
@@ -380,7 +381,7 @@ class Equation:
 
         for i in range(combinations):
             results_list = table[eq_string]
-            eval_string = eq_string
+            eval_string = repr(self)
 
             for j in range(variable_count):
                 table[str(variables[j])].append(1 if i & (1 << j) else 0)
@@ -392,36 +393,43 @@ class Equation:
             results_list[i] = (
                 1
                 if eval(
-                    eval_string.replace("+", "or")
+                    eval_string := eval_string.replace("+", "or")
                     .replace("*", "and")
                     .replace("~", "not")
                     .replace("^", "!=")
                 )
                 else 0
             )
+            # ic(eval_string, results_list[i], i)
 
-        for eq in sub_eq_strings:
-            eq_string = str(eq)
+        for eq in self.sub_eqs:
+            eq_string = repr(eq)
+
+            # ic(eq, str(eq), repr(eq))
+            # ic(eq_string)
 
             for i in range(combinations):
                 eval_string = eq_string
-                results_list = table[eq_string]
+                results_list = table[str(eq)]
 
                 for j in range(variable_count):
                     eval_string = eval_string.replace(
                         str(variables[j]), "1" if i & (1 << j) else "0"
                     )
 
+                # ic(eval_string)
                 results_list[i] = (
                     1
                     if eval(
-                        eval_string.replace("+", "or")
+                        eval_string := eval_string.replace("+", "or")
                         .replace("*", "and")
                         .replace("~", "not")
                         .replace("^", "!=")
                     )
                     else 0
                 )
+                # ic(eval_string, results_list[i], i)
+                # ic(results_list[i], i)
 
         self.table = table
 
@@ -457,7 +465,9 @@ class Equation:
         eq = Equation()
 
         if isinstance(other, int):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(ADD)
             eq.eq.append(1 if other else 0)
 
@@ -465,7 +475,9 @@ class Equation:
             return eq
 
         if isinstance(other, Variable):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(ADD)
             eq.eq.append(other)
 
@@ -504,7 +516,9 @@ class Equation:
         if isinstance(other, int):
             eq.eq.append(1 if other else 0)
             eq.eq.append(ADD)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, ADD, OB, *(self.string), CB])
             return eq
@@ -512,7 +526,9 @@ class Equation:
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(ADD)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, ADD, OB, *(self.string), CB])
             return eq
@@ -547,7 +563,9 @@ class Equation:
         eq = Equation()
 
         if isinstance(other, int):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(MUL)
             eq.eq.append(1 if other else 0)
 
@@ -555,7 +573,9 @@ class Equation:
             return eq
 
         if isinstance(other, Variable):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(MUL)
             eq.eq.append(other)
 
@@ -594,7 +614,9 @@ class Equation:
         if isinstance(other, int):
             eq.eq.append(1 if other else 0)
             eq.eq.append(MUL)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, MUL, OB, *(self.string), CB])
             return eq
@@ -602,7 +624,9 @@ class Equation:
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(MUL)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, MUL, OB, *(self.string), CB])
             return eq
@@ -637,7 +661,9 @@ class Equation:
         eq = Equation()
 
         if isinstance(other, int):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(XOR)
             eq.eq.append(1 if other else 0)
 
@@ -645,7 +671,9 @@ class Equation:
             return eq
 
         if isinstance(other, Variable):
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
             eq.eq.append(XOR)
             eq.eq.append(other)
 
@@ -684,7 +712,9 @@ class Equation:
         if isinstance(other, int):
             eq.eq.append(1 if other else 0)
             eq.eq.append(XOR)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, XOR, OB, *(self.string), CB])
             return eq
@@ -692,7 +722,9 @@ class Equation:
         if isinstance(other, Variable):
             eq.eq.append(other)
             eq.eq.append(XOR)
+            eq.eq.append(OB)
             eq.eq.extend(self.eq)
+            eq.eq.append(CB)
 
             eq.string.extend([other, XOR, OB, *(self.string), CB])
             return eq
@@ -800,10 +832,10 @@ class Equation:
         pass
 
     def __repr__(self) -> str:
-        return " ".join((str(i) for i in self.string))
+        return " ".join((str(i) for i in self.eq))
 
     def __str__(self):
-        return " ".join((str(i) for i in self.eq))
+        return " ".join((str(i) for i in self.string))
 
 
 if __name__ == "__main__":
@@ -812,8 +844,4 @@ if __name__ == "__main__":
     y = Variable("y")
     z = Variable("z")
 
-    eq = (y * z) ^ (x * y)
-    # print(eq)
-    # eq.display_table()
-    (x / y).display_table()
     (x % y).display_table()
