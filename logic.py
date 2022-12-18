@@ -21,6 +21,16 @@ class _NEG:
         return "~"
 
 
+class _COND:
+    def __str__(self):
+        return "->"
+
+
+class _BICOND:
+    def __str__(self):
+        return "<->"
+
+
 class _OB:
     def __str__(self):
         return "("
@@ -35,6 +45,8 @@ ADD = _ADD()
 MUL = _MUL()
 XOR = _XOR()
 NEG = _NEG()
+COND = _COND()
+BICOND = _BICOND()
 OB = _OB()
 CB = _CB()
 
@@ -230,6 +242,56 @@ class Variable:
         eq.eq.append(self)
         return eq
 
+    def __mod__(self, other):
+        # self % other (self <-> other)
+        # (self -> other) * (other -> self)
+        # (~self + other) * (~other + self)
+        eq = (~self + other) * (~other + self)
+
+        if isinstance(other, Equation):
+            eq.string = [self, BICOND, OB, *(other.eq), CB]
+        else:
+            eq.string = [self, BICOND, other]
+
+        return eq
+
+    def __rmod__(self, other):
+        # other % self (other <-> self)
+        # (other -> self) * (self -> other)
+        # (~other + self) * (~self + other)
+        eq = (~other + self) * (~self + other)
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(other.eq), CB, BICOND, self]
+        else:
+            eq.string = [other, BICOND, self]
+
+        return eq
+
+    def __truediv__(self, other):
+        # self % other (self -> other)
+        # ~self + other
+        eq = ~self + other
+
+        if isinstance(other, Equation):
+            eq.string = [self, COND, OB, *(other.eq), CB]
+        else:
+            eq.string = [self, COND, other]
+
+        return eq
+
+    def __rtruediv__(self, other):
+        # other / self (other -> self)
+        # ~other + self
+        eq = ~other + self
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(other.eq), CB, COND, self]
+        else:
+            eq.string = [other, COND, self]
+
+        return eq
+
     def __str__(self):
         return self.name
 
@@ -239,6 +301,7 @@ class Equation:
         self.eq = []
         self.sub_eqs = []
         self.table = None
+        self.string = []
 
     def solve(self, *args):
         pass
@@ -597,6 +660,68 @@ class Equation:
 
         raise TypeError("...")
 
+    def __mod__(self, other):
+        # self % other (self <-> other)
+        # (self -> other) * (other -> self)
+        # (~self + other) * (~other + self)
+        eq = (~self + other) * (~other + self)
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(self.eq), CB, BICOND, OB, *(other.eq), CB]
+        else:
+            eq.string = [OB, *(self.eq), CB, BICOND, other]
+
+        return eq
+
+    def __rmod__(self, other):
+        # other % self (other <-> self)
+        # (other -> self) * (self -> other)
+        # (~other + self) * (~self + other)
+        eq = (~other + self) * (~self + other)
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(other.eq), CB, BICOND, OB, *(self.eq), CB]
+        else:
+            eq.string = [
+                other,
+                BICOND,
+                OB,
+                *(self.eq),
+                CB,
+            ]
+
+        return eq
+
+    def __truediv__(self, other):
+        # self % other (self -> other)
+        # ~self + other
+        eq = ~self + other
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(self.eq), CB, COND, OB, *(other.eq), CB]
+        else:
+            eq.string = [OB, *(self.eq), CB, COND, other]
+
+        return eq
+
+    def __rtruediv__(self, other):
+        # other / self (other -> self)
+        # ~other + self
+        eq = ~other + self
+
+        if isinstance(other, Equation):
+            eq.string = [OB, *(other.eq), CB, COND, OB, *(self.eq), CB]
+        else:
+            eq.string = [
+                other,
+                COND,
+                OB,
+                *(self.eq),
+                CB,
+            ]
+
+        return eq
+
     def __invert__(self):
         # ~self
         eq = Equation()
@@ -610,6 +735,13 @@ class Equation:
     def __eq__(self, other):
         # self == other
         pass
+
+    def __repr__(self) -> str:
+        result = ""
+        for i in self.eq:
+            result += str(i) + " "
+
+        return result[:-1]
 
     def __str__(self):
         result = ""
@@ -626,5 +758,7 @@ if __name__ == "__main__":
     z = Variable("z")
 
     eq = (y * z) ^ (x * y)
-    print(eq)
-    eq.display_table()
+    # print(eq)
+    # eq.display_table()
+    (x / y).display_table()
+    (x % y).display_table()
