@@ -1,9 +1,11 @@
 from sympy import *
 import numpy as np
 import matplotlib.pyplot as plt
+import io
 
 
 x, n = symbols("x n")
+
 
 def fourier_series_evaluator(func, start, end):
     T = end - start
@@ -16,6 +18,22 @@ def fourier_series_evaluator(func, start, end):
     bn = 2 / T * (integrate(func * sin_term, (x, start, end)).doit()) * sin_term
 
     return (a0, an, bn)
+
+
+def fourier_series_latex(func, start, end):
+    a0, an, bn = fourier_series_evaluator(func, start, end)
+    a0, an, bn = (
+        nsimplify(a0, tolerance=0.01, full=True),
+        nsimplify(an, tolerance=0.01, full=True),
+        nsimplify(bn, tolerance=0.01, full=True),
+    )
+
+    latex_string = latex(a0) + " + "
+    latex_string += "\\sum_{n=1} ^{\\infty} "
+    latex_string += latex(an)
+    latex_string += latex(bn)
+
+    return latex_string
 
 
 def fourier_graph_compute(func, start, end, terms=6, repeat=1, dir=1):
@@ -56,6 +74,21 @@ def fourier_visualizer(func, start, end, terms=6, repeat=1, dir=1):
     for i in y_axis:
         plt.plot(x_axis, i)
     plt.show()
+
+
+def fourier_visualizer_svg(func, start, end, terms=6, repeat=1, dir=1):
+    x_axis, y_axis = fourier_graph_compute(func, start, end, terms, repeat, dir)
+
+    for i in y_axis:
+        plt.plot(x_axis, i)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="svg")
+    buf.seek(0)
+
+    plt.close()
+
+    return buf
 
 
 if __name__ == "__main__":
