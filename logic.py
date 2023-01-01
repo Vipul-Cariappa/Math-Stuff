@@ -54,6 +54,12 @@ CB = _CB()
 class Variable:
     def __init__(self, name):
         self.name = name
+        self.table = None
+
+    def generate_table_md(self):
+        self.table = dict()
+        self.table[str(self)] = [0, 1]
+        return f"| {str(self)} |\n| - |\n| 0 |\n| 1 |"
 
     def __add__(self, other):
         # self + other
@@ -452,6 +458,39 @@ class Equation:
             print("\n")
         print("\n")
 
+    def generate_table_md(self):
+        if self.table is None:
+            self.generate_truth_table()
+
+        table_md = ""
+
+        table_length = len(self.table[str(self)])
+        header_string_length = [len(i) for i in self.table.keys()]
+
+        table_md += "|"
+        for i in self.table.keys():
+            table_md += f" {i} |"
+        table_md += "\n"
+
+        table_md += "|"
+        for _ in self.table.keys():
+            table_md += f" - |"
+        table_md += "\n"
+
+        for i in range(table_length):
+            table_md += "|"
+            for index, j in enumerate(self.table.keys()):
+                table_md += (
+                    " " * math.floor((header_string_length[index] - 1) / 2)
+                    + f" {self.table[j][i]}"
+                    + " " * math.ceil((header_string_length[index] - 1) / 2)
+                    + " |"
+                )
+            table_md += "\n"
+        table_md += "\n"
+
+        return table_md
+
     def __add__(self, other):
         # self + other
         eq = Equation()
@@ -829,10 +868,27 @@ class Equation:
         return " ".join((str(i) for i in self.string))
 
 
-if __name__ == "__main__":
-    # Example use
-    x = Variable("x")
-    y = Variable("y")
-    z = Variable("z")
+a = Variable("a")
+b = Variable("b")
+c = Variable("c")
+d = Variable("d")
+e = Variable("e")
+p = Variable("p")
+q = Variable("q")
+r = Variable("r")
+s = Variable("s")
+u = Variable("u")
+v = Variable("v")
+w = Variable("w")
+x = Variable("x")
+y = Variable("y")
+z = Variable("z")
 
+
+def truth_table_generator(expression_string):
+    expression = eval(expression_string)
+    return expression.generate_table_md(), expression.table
+
+
+if __name__ == "__main__":
     (x % y).display_table()

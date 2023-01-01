@@ -1,19 +1,25 @@
-from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-from math import *
+from sympy import *
 
-string = input("Enter Function to be Plot\n\tf(x) = ")
 
-func_str = "lambda x: " + string.replace("^", "**")
-func = eval(func_str)
+x = symbols("x")
 
-x = np.linspace(-10, 10, 100)
-y = np.apply_along_axis(np.vectorize(func), 0, x)
 
-plt.plot(x, y)
-plt.ylabel(string)
-plt.xlabel("x")
-plt.show()
-# file_name = str(datetime.now()).split(".")[0].replace(":", "-") + ".png"
-# plt.savefig(file_name, bbox_inches='tight')
+def graph_compute_points(func, start=-3.14, end=3.14):
+    x_axis = np.linspace(start, end, 50)
+    y_axis = np.vectorize(lambda value: float(func.subs(x, value)))(x_axis)
+
+    return x_axis, y_axis
+
+
+def graph(func, start=-3.14, end=3.14):
+    x_axis, y_axis = graph_compute_points(func, start, end)
+
+    plt.plot(x_axis, y_axis)
+    plt.show()
+
+
+if __name__ == "__main__":
+    func = input("f(x): ")
+    graph(eval(func))

@@ -173,3 +173,4 @@ poetry.toml
 # User defined
 *.png
 .vscode/
+*tmp*
