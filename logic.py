@@ -885,8 +885,8 @@ y = Variable("y")
 z = Variable("z")
 
 
-def truth_table_generator(expression_string):
-    expression = eval(expression_string)
+def truth_table_generator(expression_string: str):
+    expression = eval(expression_string.replace("<->", "%").replace("->", "/"))
     return expression.generate_table_md(), expression.table
 
 
