@@ -886,8 +886,11 @@ z = Variable("z")
 
 
 def truth_table_generator(expression_string: str):
-    expression = eval(expression_string.replace("<->", "%").replace("->", "/"))
-    return expression.generate_table_md(), expression.table
+    try:
+        expression = eval(expression_string)
+        return expression.generate_table_md(), expression.table
+    except:
+        return None, None
 
 
 if __name__ == "__main__":
