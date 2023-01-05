@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sympy import *
+import io
 
 
 x = symbols("x")
@@ -21,6 +22,16 @@ def taylor_series(func, at=1, powers_upto=6):
     return terms
 
 
+def taylor_series_latex(func, at):
+    f = taylor_series(func, at, powers_upto=4)
+
+    result = 0
+    for i in f:
+        result += i
+
+    return latex(result)
+
+
 def taylor_series_computer(func, at=1, powers_upto=4, interval=3.14):
     terms = taylor_series(func, at, powers_upto)
 
@@ -39,6 +50,23 @@ def taylor_series_computer(func, at=1, powers_upto=4, interval=3.14):
             )
 
     return x_axis, y_axis
+
+
+def taylor_series_visualizer_svg(func, at=1, powers_upto=4, interval=3.14):
+    x_axis, y_axis = taylor_series_computer(func, at, powers_upto, interval)
+
+    for i in y_axis:
+        plt.plot(x_axis, i)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="svg")
+    buf.seek(0)
+
+    plt.close()
+
+    buf.seek(0)
+
+    return buf
 
 
 def taylor_series_visualizer(func, at=1, powers_upto=4, interval=3.14):
