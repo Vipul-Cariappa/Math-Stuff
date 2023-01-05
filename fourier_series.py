@@ -48,9 +48,9 @@ def fourier_series_latex(func, start, end):
     # each_graph_equation = []
 
     latex_string = latex(a0) + " + "
-    latex_string += "\\sum_{n=1} ^{\\infty} "
+    latex_string += "\\sum_{n=1} ^{\\infty}"
     latex_string += latex(an)
-    latex_string += latex(bn)
+    latex_string += " + " + latex(bn)
 
     # each_graph_equation.append(latex_string)
 
