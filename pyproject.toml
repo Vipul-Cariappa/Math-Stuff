@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MathStuff"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name = "Vipul Cariappa", email = "vipulcariappa@gmail.com" }]
 description = "Math Stuff"
 readme = "README.md"
