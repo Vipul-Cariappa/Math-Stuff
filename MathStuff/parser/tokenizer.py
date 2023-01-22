@@ -108,29 +108,34 @@ class Tokenizer:
     def generate_tokens(self):
         while self._current_character is not None:
             if self._current_character in IGNORE:
-                pass
+                self._current_character = self._advance_string()
             elif self._current_character == "+":
                 yield AddToken
+                self._current_character = self._advance_string()
             elif self._current_character == "-":
                 yield SubToken
+                self._current_character = self._advance_string()
             elif self._current_character == "*":
                 yield MulToken
+                self._current_character = self._advance_string()
             elif self._current_character == "/":
                 yield DivToken
+                self._current_character = self._advance_string()
             elif self._current_character == "^":
                 yield PowToken
+                self._current_character = self._advance_string()
             elif self._current_character == "(":
                 yield OPToken
+                self._current_character = self._advance_string()
             elif self._current_character == ")":
                 yield CPToken
+                self._current_character = self._advance_string()
             elif self._current_character in DIGITS or self._current_character == ".":
                 yield self._generate_number()
             else:
                 raise SyntaxError(
                     f"Could not tokenize the input text: {self._current_character}"
                 )
-
-            self._current_character = self._advance_string()
 
     def _generate_number(self):
         is_decimal = False

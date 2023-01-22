@@ -131,7 +131,7 @@ class Parser:
 
             return SubNode(lhs, rhs)
 
-        elif self._current_token is None:
+        elif self._current_token is None or self._current_token is CPToken:
             return lhs
 
         raise SyntaxError(
@@ -175,7 +175,17 @@ class Parser:
         if self._current_token is None:
             return None
 
-        if self._current_token is AddToken or self._current_token is SubToken:
+        if self._current_token is OPToken:
+            self._current_token = self._advance_token()
+            result = self._create_expression()
+
+            if self._current_token is not CPToken:
+                raise SyntaxError(f"Expected ')', but got {self._current_token}")
+
+            self._current_token = self._advance_token()
+            return result
+
+        elif self._current_token is AddToken or self._current_token is SubToken:
             token = self._current_token
             self._current_token = self._advance_token()
 
@@ -183,8 +193,9 @@ class Parser:
 
             if token is SubToken:
                 return MinusNode(factor)
+            return factor
 
-        if isinstance(self._current_token, DecimalToken):
+        elif isinstance(self._current_token, DecimalToken):
             token = self._current_token
             self._current_token = self._advance_token()
             return DecimalNode(token.value)
