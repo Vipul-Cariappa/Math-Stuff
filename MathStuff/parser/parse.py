@@ -135,7 +135,7 @@ class Parser:
             return lhs
 
         raise SyntaxError(
-            f"Expented AddToken or SubToken here but got {self._current_token}"
+            f"Expected AddToken or SubToken here but got {self._current_token}"
         )
 
     def _create_term(self):
