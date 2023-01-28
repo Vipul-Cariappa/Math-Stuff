@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from tokenizer import *
+from typing import Any
 
 
 @dataclass
@@ -37,7 +38,7 @@ class VariableNode:
 
 @dataclass
 class FunctionNode:
-    value: any
+    value: Any
     func: str  # TODO: should change to FuncType
 
     def __str__(self) -> str:
@@ -49,7 +50,7 @@ class FunctionNode:
 
 @dataclass
 class MinusNode:
-    value: any
+    value: Any
 
     def __str__(self):
         return f"(-{str(self.value)})"
@@ -60,7 +61,7 @@ class MinusNode:
 
 @dataclass
 class NegNode:
-    value: any
+    value: Any
 
     def __str__(self):
         return f"(~{str(self.value)})"
@@ -71,8 +72,8 @@ class NegNode:
 
 @dataclass
 class AddNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} + {self.right_node})"
@@ -83,8 +84,8 @@ class AddNode:
 
 @dataclass
 class SubNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} - {self.right_node})"
@@ -95,8 +96,8 @@ class SubNode:
 
 @dataclass
 class MulNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} * {self.right_node})"
@@ -107,8 +108,8 @@ class MulNode:
 
 @dataclass
 class DivNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} / {self.right_node})"
@@ -119,8 +120,8 @@ class DivNode:
 
 @dataclass
 class PowNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} ^ {self.right_node})"
@@ -131,8 +132,8 @@ class PowNode:
 
 @dataclass
 class AndNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} & {self.right_node})"
@@ -143,8 +144,8 @@ class AndNode:
 
 @dataclass
 class OrNode:
-    left_node: any
-    right_node: any
+    left_node: Any
+    right_node: Any
 
     def __str__(self):
         return f"({self.left_node} | {self.right_node})"

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from parse import *
 from math import sin, cos, tan, exp
+from typing import Any
 
 
 @dataclass
@@ -38,7 +39,7 @@ class Boolean:
 
 @dataclass
 class PlaceHolder:
-    value: any
+    value: Any
 
     def __str__(self):
         return str(self.value)
