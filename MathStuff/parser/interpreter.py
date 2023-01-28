@@ -82,8 +82,7 @@ class Interpreter:
         rhs = self.visit(node.right_node)
 
         if isinstance(lhs, Decimal) or isinstance(rhs, Decimal):
-            # return Decimal(lhs.value + rhs.value)
-            raise TypeError("Exponentiation with floating point not possible")
+            return Decimal(lhs.value**rhs.value)
         return Integer(lhs.value**rhs.value)
 
     def visit_NoneType(self, node):
