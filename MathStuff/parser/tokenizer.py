@@ -150,7 +150,7 @@ class Tokenizer:
                     raise SyntaxError("Found 2 decimal points in the number")
 
                 is_decimal = True
-                number = self._current_character if number != "" else "0."
+                number = number + self._current_character if number != "" else "0."
             else:
                 if is_decimal:
                     return DecimalToken(float(number))
