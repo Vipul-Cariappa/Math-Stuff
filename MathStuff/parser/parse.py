@@ -25,11 +25,45 @@ class DecimalNode:
 
 
 @dataclass
+class VariableNode:
+    value: str
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f"VariableNode: {self.value}"
+
+
+@dataclass
+class FunctionNode:
+    value: any
+    func: str  # TODO: should change to FuncType
+
+    def __str__(self) -> str:
+        return f"{self.func}({self.value})"
+
+    def __repr__(self) -> str:
+        return f"FunctionNode: {self.func}({self.value})"
+
+
+@dataclass
 class MinusNode:
     value: any
 
     def __str__(self):
         return f"(-{str(self.value)})"
+
+    def __repr__(self):
+        return f"MinusNode: {str(self)}"
+
+
+@dataclass
+class NegNode:
+    value: any
+
+    def __str__(self):
+        return f"(~{str(self.value)})"
 
     def __repr__(self):
         return f"MinusNode: {str(self)}"
@@ -95,6 +129,30 @@ class PowNode:
         return f"PowNode: {str(self)}"
 
 
+@dataclass
+class AndNode:
+    left_node: any
+    right_node: any
+
+    def __str__(self):
+        return f"({self.left_node} & {self.right_node})"
+
+    def __repr__(self) -> str:
+        return f"AndNode: {str(self)}"
+
+
+@dataclass
+class OrNode:
+    left_node: any
+    right_node: any
+
+    def __str__(self):
+        return f"({self.left_node} | {self.right_node})"
+
+    def __repr__(self) -> str:
+        return f"OrNode: {str(self)}"
+
+
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -142,7 +200,7 @@ class Parser:
         if self._current_token is None:
             return None
 
-        lhs = self._create_power_term()
+        lhs = self._create_logic()
 
         if self._current_token is MulToken or self._current_token is DivToken:
             token = self._current_token
@@ -153,6 +211,24 @@ class Parser:
                 return MulNode(lhs, rhs)
 
             return DivNode(lhs, rhs)
+
+        return lhs
+
+    def _create_logic(self):
+        if self._current_token is None:
+            return None
+
+        lhs = self._create_power_term()
+
+        if self._current_token is AndToken or self._current_token is OrToken:
+            token = self._current_token
+            self._current_token = self._advance_token()
+            rhs = self._create_logic()
+
+            if token is AndToken:
+                return AndNode(lhs, rhs)
+
+            return OrNode(lhs, rhs)
 
         return lhs
 
@@ -185,7 +261,11 @@ class Parser:
             self._current_token = self._advance_token()
             return result
 
-        elif self._current_token is AddToken or self._current_token is SubToken:
+        elif (
+            self._current_token is AddToken
+            or self._current_token is SubToken
+            or self._current_token is NegToken
+        ):
             token = self._current_token
             self._current_token = self._advance_token()
 
@@ -193,6 +273,8 @@ class Parser:
 
             if token is SubToken:
                 return MinusNode(factor)
+            if token is NegToken:
+                return NegNode(factor)
             return factor
 
         elif isinstance(self._current_token, DecimalToken):
@@ -204,6 +286,29 @@ class Parser:
             token = self._current_token
             self._current_token = self._advance_token()
             return IntegerNode(token.value)
+
+        elif isinstance(self._current_token, CharToken):
+            token = self._current_token
+            self._current_token = self._advance_token()
+            return VariableNode(token.value)
+
+        elif isinstance(self._current_token, StringToken):
+            func = self._current_token
+            self._current_token = self._advance_token()
+
+            if self._current_token is OPToken:
+                self._current_token = self._advance_token()
+            else:
+                raise SyntaxError(f"Expected '(' after function name {func.value}")
+
+            value = self._create_expression()
+
+            if self._current_token is not CPToken:
+                raise SyntaxError(f"Expected ')', but got {self._current_token}")
+
+            self._current_token = self._advance_token()
+
+            return FunctionNode(value, func.value)
 
         else:
             raise SyntaxError(

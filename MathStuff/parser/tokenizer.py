@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 
 DIGITS = "0123456789"
+CHARACTERS = "abcdefghijklmnopqrstuvwxyz"
 IGNORE = " \n\t\r"
 
 
@@ -25,6 +26,28 @@ class DecimalToken:
 
     def __repr__(self) -> str:
         return f"DecimalToken: {self.value}"
+
+
+@dataclass
+class CharToken:
+    value: str
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f"CharToken: {self.value}"
+
+
+@dataclass
+class StringToken:
+    value: str
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f"StringToken: {self.value}"
 
 
 @dataclass
@@ -73,6 +96,33 @@ class PowToken:
 
 
 @dataclass
+class NegToken:
+    def __str__(self):
+        return "~"
+
+    def __repr__(self) -> str:
+        return "NegToken: ~"
+
+
+@dataclass
+class AndToken:
+    def __str__(self):
+        return "&"
+
+    def __repr__(self) -> str:
+        return "AndToken: &"
+
+
+@dataclass
+class OrToken:
+    def __str__(self):
+        return "|"
+
+    def __repr__(self) -> str:
+        return "OrToken: |"
+
+
+@dataclass
 class OPToken:
     def __str__(self):
         return "("
@@ -90,12 +140,45 @@ class CPToken:
         return "CPToken: )"
 
 
-# TODO: add the following tokens: | & ~
+@dataclass
+class OSBToken:
+    def __str__(self):
+        return "["
+
+    def __repr__(self) -> str:
+        return "OSBToken: ["
+
+
+@dataclass
+class CSBToken:
+    def __str__(self):
+        return "]"
+
+    def __repr__(self) -> str:
+        return "CSBToken: ]"
+
+
+@dataclass
+class CommaToken:
+    def __str__(self):
+        return ","
+
+    def __repr__(self) -> str:
+        return "CommaToken: ,"
+
+
+@dataclass
+class SemiColonToken:
+    def __str__(self):
+        return ";"
+
+    def __repr__(self) -> str:
+        return "SemiColonToken: ;"
 
 
 class Tokenizer:
     def __init__(self, string: str):
-        self.string = string
+        self.string = string.lower()
         self._string_iterator = iter(self.string)
         self._current_character = self._advance_string()
 
@@ -107,35 +190,54 @@ class Tokenizer:
 
     def generate_tokens(self):
         while self._current_character is not None:
-            if self._current_character in IGNORE:
-                self._current_character = self._advance_string()
-            elif self._current_character == "+":
+            if self._current_character == "+":
                 yield AddToken
-                self._current_character = self._advance_string()
+
             elif self._current_character == "-":
                 yield SubToken
-                self._current_character = self._advance_string()
+
             elif self._current_character == "*":
                 yield MulToken
-                self._current_character = self._advance_string()
+
             elif self._current_character == "/":
                 yield DivToken
-                self._current_character = self._advance_string()
+
             elif self._current_character == "^":
                 yield PowToken
-                self._current_character = self._advance_string()
+
+            elif self._current_character == "~":
+                yield NegToken
+
+            elif self._current_character == "&":
+                yield AndToken
+
+            elif self._current_character == "|":
+                yield OrToken
+
             elif self._current_character == "(":
                 yield OPToken
-                self._current_character = self._advance_string()
+
             elif self._current_character == ")":
                 yield CPToken
-                self._current_character = self._advance_string()
+
+            elif self._current_character in CHARACTERS:
+                yield self._generate_string()
+                continue
+
             elif self._current_character in DIGITS or self._current_character == ".":
                 yield self._generate_number()
+                continue
+
+            elif self._current_character in IGNORE:
+                self._current_character = self._advance_string()
+                continue
+
             else:
                 raise SyntaxError(
                     f"Could not tokenize the input text: {self._current_character}"
                 )
+
+            self._current_character = self._advance_string()
 
     def _generate_number(self):
         is_decimal = False
@@ -152,15 +254,27 @@ class Tokenizer:
                 is_decimal = True
                 number = number + self._current_character if number != "" else "0."
             else:
-                if is_decimal:
-                    return DecimalToken(float(number))
-                return IntegerToken(int(number))
+                break
 
             self._current_character = self._advance_string()
 
         if is_decimal:
             return DecimalToken(float(number))
         return IntegerToken(int(number))
+
+    def _generate_string(self):
+        string = ""
+
+        while self._current_character is not None:
+            if self._current_character in CHARACTERS:
+                string += self._current_character
+            else:
+                break
+            self._current_character = self._advance_string()
+
+        if len(string) > 1:
+            return StringToken(string)
+        return CharToken(string)
 
 
 if __name__ == "__main__":
