@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Union, TypeVar
+import math
 
 
 EquationNodesType = Union[
@@ -7,6 +8,7 @@ EquationNodesType = Union[
     "SubNode",
     "MulNode",
     "PowNode",
+    "LogNode",
     "MinusNode",
     "VariableNode",
 ]
@@ -54,6 +56,31 @@ class BinaryNode:
 
         return self
 
+    def _get_anti_operations_list(self, search, stack):
+        if self.lhs is search:
+            stack.append((self.__class__, "left"))
+            stack.append(self.lhs)
+            return True
+
+        if self.rhs is search:
+            stack.append((self.__class__, "right"))
+            stack.append(self.rhs)
+            return True
+
+        if isinstance(
+            self.lhs, EquationNodesType
+        ) and self.lhs._get_anti_operations_list(search, stack):
+            stack.append((self.__class__, "left"))
+            return True
+
+        if isinstance(
+            self.rhs, EquationNodesType
+        ) and self.rhs._get_anti_operations_list(search, stack):
+            stack.append((self.__class__, "right"))
+            return True
+
+        return False
+
 
 @dataclass(repr=True)
 class VariableNode:
@@ -62,6 +89,12 @@ class VariableNode:
     def substitute(self, variable, value):
         if self.value == variable:
             self.value = value
+
+    def _get_anti_operations_list(self, search, stack):
+        if search.eq.value == self.value:
+            stack.append((self.__class__, "me"))
+            return True
+        return False
 
     def __str__(self):
         return self.value
@@ -73,6 +106,20 @@ class AddNode(BinaryNode):
     rhs: EquationNodesType | int | float
 
     def simplify(self):
+        if isinstance(self.lhs, EquationNodesType) and not isinstance(
+            self.lhs, VariableNode
+        ):
+            self.lhs = self.lhs.simplify()
+        else:
+            self.lhs = self.lhs
+
+        if isinstance(self.rhs, EquationNodesType) and not isinstance(
+            self.rhs, VariableNode
+        ):
+            self.rhs = self.rhs.simplify()
+        else:
+            self.rhs = self.rhs
+
         if isinstance(self.lhs, AddNode):
             if not isinstance(self.rhs, EquationNodesType):
                 if not isinstance(self.lhs.rhs, EquationNodesType):
@@ -92,21 +139,7 @@ class AddNode(BinaryNode):
         if isinstance(self.lhs, VariableNode) and self.lhs is self.rhs:
             return MulNode(self.lhs, 2)
 
-        if isinstance(self.lhs, EquationNodesType) and not isinstance(
-            self.lhs, VariableNode
-        ):
-            lhs = self.lhs.simplify()
-        else:
-            lhs = self.lhs
-
-        if isinstance(self.rhs, EquationNodesType) and not isinstance(
-            self.rhs, VariableNode
-        ):
-            rhs = self.rhs.simplify()
-        else:
-            rhs = self.rhs
-
-        return AddNode(lhs, rhs)
+        return self
 
     def __str__(self) -> str:
         return f"({self.lhs} + {self.rhs})"
@@ -116,9 +149,6 @@ class AddNode(BinaryNode):
 class SubNode(BinaryNode):
     lhs: EquationNodesType | int | float
     rhs: EquationNodesType | int | float
-
-    def apply_operation(self, lhs, rhs):
-        return lhs - rhs
 
     def simplify(self):
         return AddNode(self.lhs, MinusNode(self.rhs).simplify()).simplify()
@@ -132,10 +162,21 @@ class MulNode(BinaryNode):
     lhs: EquationNodesType | int | float
     rhs: EquationNodesType | int | float
 
-    def apply_operation(self, lhs, rhs):
-        return lhs * rhs
-
     def simplify(self):
+        if isinstance(self.lhs, EquationNodesType) and not isinstance(
+            self.lhs, VariableNode
+        ):
+            self.lhs = self.lhs.simplify()
+        else:
+            self.lhs = self.lhs
+
+        if isinstance(self.rhs, EquationNodesType) and not isinstance(
+            self.rhs, VariableNode
+        ):
+            self.rhs = self.rhs.simplify()
+        else:
+            self.rhs = self.rhs
+
         if isinstance(self.lhs, MulNode):
             if not isinstance(self.rhs, EquationNodesType):
                 if not isinstance(self.lhs.rhs, EquationNodesType):
@@ -150,26 +191,12 @@ class MulNode(BinaryNode):
             isinstance(self.lhs, EquationNodesType)
             or isinstance(self.rhs, EquationNodesType)
         ):
-            return self.lhs + self.rhs
+            return self.lhs * self.rhs
 
         if isinstance(self.lhs, VariableNode) and self.lhs is self.rhs:
             return MulNode(self.lhs, 2)
 
-        if isinstance(self.lhs, EquationNodesType) and not isinstance(
-            self.lhs, VariableNode
-        ):
-            lhs = self.lhs.simplify()
-        else:
-            lhs = self.lhs
-
-        if isinstance(self.rhs, EquationNodesType) and not isinstance(
-            self.rhs, VariableNode
-        ):
-            rhs = self.rhs.simplify()
-        else:
-            rhs = self.rhs
-
-        return MulNode(lhs, rhs)
+        return self
 
     def __str__(self):
         return f"({self.lhs} * {self.rhs})"
@@ -180,14 +207,32 @@ class DivNode(BinaryNode):
     lhs: EquationNodesType | int | float
     rhs: EquationNodesType | int | float
 
-    def apply_operation(self, lhs, rhs):
-        return lhs / rhs
-
     def simplify(self):
         # TODO
+        if isinstance(self.lhs, EquationNodesType) and not isinstance(
+            self.lhs, VariableNode
+        ):
+            self.lhs = self.lhs.simplify()
+        else:
+            self.lhs = self.lhs
+
+        if isinstance(self.rhs, EquationNodesType) and not isinstance(
+            self.rhs, VariableNode
+        ):
+            self.rhs = self.rhs.simplify()
+        else:
+            self.rhs = self.rhs
+
+        if not (
+            isinstance(self.lhs, EquationNodesType)
+            or isinstance(self.rhs, EquationNodesType)
+        ):
+            return self.lhs / self.rhs
+
         return self
 
     def __str__(self):
+
         return f"({self.lhs} / {self.rhs})"
 
 
@@ -196,8 +241,62 @@ class PowNode(BinaryNode):
     lhs: EquationNodesType | int | float
     rhs: EquationNodesType | int | float
 
-    def apply_operation(self, lhs, rhs):
-        return lhs**rhs
+    def simplify(self):
+        # TODO
+        if isinstance(self.lhs, EquationNodesType) and not isinstance(
+            self.lhs, VariableNode
+        ):
+            self.lhs = self.lhs.simplify()
+        else:
+            self.lhs = self.lhs
+
+        if isinstance(self.rhs, EquationNodesType) and not isinstance(
+            self.rhs, VariableNode
+        ):
+            self.rhs = self.rhs.simplify()
+        else:
+            self.rhs = self.rhs
+
+        if not (
+            isinstance(self.lhs, EquationNodesType)
+            or isinstance(self.rhs, EquationNodesType)
+        ):
+            return self.lhs**self.rhs
+
+        return self
+
+    def __str__(self):
+        return f"({self.lhs} ^ {self.rhs})"
+
+
+@dataclass(repr=True)
+class LogNode(BinaryNode):
+    lhs: EquationNodesType | int | float
+    rhs: EquationNodesType | int | float
+
+    def simplify(self):
+        # TODO
+        if isinstance(self.lhs, EquationNodesType) and not isinstance(
+            self.lhs, VariableNode
+        ):
+            self.lhs = self.lhs.simplify()
+        else:
+            self.lhs = self.lhs
+
+        if isinstance(self.rhs, EquationNodesType) and not isinstance(
+            self.rhs, VariableNode
+        ):
+            self.rhs = self.rhs.simplify()
+        else:
+            self.rhs = self.rhs
+
+        if not (
+            isinstance(self.lhs, EquationNodesType)
+            or isinstance(self.rhs, EquationNodesType)
+        ):
+            return math.log(self.lhs, self.rhs)
+
+        return self
 
     def __str__(self):
         return f"({self.lhs} ^ {self.rhs})"
@@ -214,9 +313,29 @@ class MinusNode(UnaryNode):
         if isinstance(self.value, BinaryNode):
             self.value._simplify_step_1()
 
+    def _get_anti_operations_list(self, search, stack):
+        if self.value is search:
+            stack.append(self.__class__)
+            stack.append(self.value)
+            return True
+
+        if isinstance(
+            self.value, EquationNodesType
+        ) and self.value._get_anti_operations_list(search, stack):
+            stack.append((self.__class__, "down"))
+            return True
+
+        return False
+
     def simplify(self):
         if isinstance(self.value, BinaryNode):
             return MinusNode(self.value.simplify())
+
+        if isinstance(self.value, MinusNode):
+            return self.value.simplify()
+
+        if not isinstance(self.value, VariableNode):
+            return -(self.value)
 
 
 EquationNodesType = Union[
@@ -224,6 +343,7 @@ EquationNodesType = Union[
     SubNode,
     MulNode,
     PowNode,
+    LogNode,
     MinusNode,
     VariableNode,
 ]

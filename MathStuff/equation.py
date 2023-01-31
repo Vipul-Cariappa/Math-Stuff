@@ -82,6 +82,9 @@ class PartEquation:
 
         return PartEquation(PowNode(self.eq, other))
 
+    def __rpow__(self, other: int | float) -> Self:
+        return PartEquation(PowNode(other, self.eq))
+
     def __neg__(self) -> Self:
         return PartEquation(MinusNode(self.eq))
 
@@ -99,14 +102,79 @@ class Equation:
                     "lhs and rhs of a equation can not be unequal constants"
                 )
 
-    def solve(self):
-        pass
+    def solve(self, to):
+        # FIXME: Assuming lhs has x and x appears only once in the equation
+
+        # Step 1: make a list of anti operations to perform
+        operations = []
+        self.lhs.eq._get_anti_operations_list(to, operations)
+        # print(operations)
+
+        solution = self.rhs
+        eq = self.lhs.eq
+
+        while operations:
+            operation, side = operations.pop()
+
+            if operation is AddNode:
+                if side == "left":
+                    solution = SubNode(solution, eq.rhs)
+                    eq = eq.lhs
+                elif side == "right":
+                    solution = SubNode(solution, eq.lhs)
+                    eq = eq.rhs
+            elif operation is SubNode:
+                if side == "left":
+                    solution = AddNode(solution, eq.rhs)
+                    eq = eq.lhs
+                elif side == "right":
+                    solution = AddNode(solution, eq.lhs)
+                    eq = eq.rhs
+            elif operation is MulNode:
+                if side == "left":
+                    solution = DivNode(solution, eq.rhs)
+                    eq = eq.lhs
+                elif side == "right":
+                    solution = DivNode(solution, eq.lhs)
+                    eq = eq.rhs
+            elif operation is DivNode:
+                if side == "left":
+                    solution = MulNode(solution, eq.rhs)
+                    eq = eq.lhs
+                elif side == "right":
+                    solution = MulNode(solution, eq.lhs)
+                    eq = eq.rhs
+            elif operation is PowNode:
+                if side == "left":
+                    solution = PowNode(solution, (1 / eq.rhs))
+                    eq = eq.lhs
+                elif side == "right":
+                    solution = LogNode(solution, eq.lhs)
+                    eq = eq.rhs
+            elif operation is MinusNode:
+                solution = MinusNode(solution)
+                eq = eq.value
+            elif operation is VariableNode:
+                break
+            else:
+                raise Exception("Broken")
+
+        if isinstance(solution, int | float | complex):
+            return solution
+
+        return solution.simplify()
 
     def simplify(self):
         pass
 
     def graph(self):
         pass
+
+    def __str__(self):
+        return f"{self.lhs} = {self.rhs}"
+
+    def __repr__(self):
+        return f"{repr(self.lhs)} = {repr(self.rhs)}"
 
 
 if __name__ == "__main__":
@@ -115,4 +183,6 @@ if __name__ == "__main__":
     y = PartEquation("y")
     z = PartEquation("z")
 
-    str((x + y + z * x - y + z).substitute([(x, 1)]))
+    eq = Equation(x * 4 + 120, 0)
+    print(eq)
+    print(eq.solve(x))
