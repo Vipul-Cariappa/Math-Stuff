@@ -23,13 +23,22 @@ class PartEquation:
         return self
 
     def simplify(self):
-        pass
+        if isinstance(self.eq, EquationNodesType):
+            self.eq._simplify_step_1()
+            simplified = self.eq.simplify()
+            if isinstance(simplified, EquationNodesType):
+                return PartEquation(simplified)
+            return simplified
+        return self
 
     def graph(self):
         pass
 
     def __str__(self) -> str:
         return str(self.eq)
+
+    def __repr__(self) -> str:
+        return repr(self.eq)
 
     def __add__(self, other: Self | int | float) -> Self:
         if type(self) is type(other):
