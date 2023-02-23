@@ -195,3 +195,4 @@ def test_combinations():
         number = (an << 2) + (bn << 1) + cn
 
         assert number == i
+        
