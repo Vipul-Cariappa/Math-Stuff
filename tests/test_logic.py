@@ -26,7 +26,7 @@ def evaluator3(tb, equation_str, result_str):
         result_str: key in the tb for the result
     Works only for equation of three variable
     """
-    for i in range(4):
+    for i in range(8):
         a = tb["a"][i]
         b = tb["b"][i]
         c = tb["c"][i]
@@ -122,7 +122,7 @@ def test_biconditional():
     eq = a % b
     table = eq.generate_truth_table()
 
-    evaluator2(table, "int(not((not(a) and b) or (a and (not(b)))))", "a <-> b")
+    evaluator2(table, "int((not(a) or b) and (a or (not(b))))", "a <-> b")
 
 
 def test_xor():
@@ -195,13 +195,3 @@ def test_combinations():
         number = (an << 2) + (bn << 1) + cn
 
         assert number == i
-
-
-# test_combinations()
-
-# TODO: remove
-# test_andor()
-# conditional /
-# xor ^
-# biconditioanl %
-# (a + ~b) -> b
