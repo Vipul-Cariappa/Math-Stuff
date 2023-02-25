@@ -383,6 +383,6 @@ def test_combinations5():
         dn = tb["d"][i]
         en = tb["e"][i]
 
-        number = (an << 5) + (bn << 3) + (cn << 2) + (dn << 1) + en
+        number = (an << 4) + (bn << 3) + (cn << 2) + (dn << 1) + en
 
         assert number == i
